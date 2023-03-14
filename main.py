@@ -100,6 +100,8 @@ def main() -> None:
         display_content(email='test@localhost.com')
     else:
         st.header("Please contact us to get access!")
+        st.subheader(st.experimental_user.email)
+        st.write("Share this email for access")
 
 
 if __name__ == '__main__':
