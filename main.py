@@ -13,9 +13,9 @@ api_key = st.secrets['api_key']
 api_secret = st.secrets['api_secret']
 
 # customers
-customer1 = st.secrets['customers']['customer1']
-customer2 = st.secrets['customers']['customer2']
-customer3 = st.secrets['customers']['customer3']
+#customer1 = st.secrets['customers']['customer1']
+#customer2 = st.secrets['customers']['customer2']
+#customer3 = st.secrets['customers']['customer3']
 
 # streamlit
 st.set_page_config(
@@ -42,8 +42,10 @@ def footer():
 ADMIN_USERS = {
     'customer1@gmail.com',
     'customer2@gmail.com',
-    'customer3@gmail.com'
+    'test@localhost.com'
 }
+#for i in ADMIN_USERS:
+#    print(i)
 
 # hide col0 in streamlit
 # CSS to inject contained in a string
@@ -67,7 +69,6 @@ def display_content(email):
     st.sidebar.info("Data only available for present date")
 
     tab1, tab2, tab3 = st.tabs(["Daily Report", "Pump Details", "Pump-Wise Sales"])
-    #data_file_1 = "./data/" + email.replace(".com", "") + "/daily-report.csv"
     data_file_1 = "./data/" + email.split("@")[0] + "/daily-report.csv"
     data_file_2 = "./data/" + email.split("@")[0] + "/pump-details.csv"
     data_file_3 = "./data/" + email.split("@")[0] + "/pump-wise-sales.csv"
@@ -90,19 +91,22 @@ def display_content(email):
 def main() -> None:
     # Start Writing Code Here
     #footer()
-    if st.experimental_user.email == customer1:
-        display_content(email=customer1)
-    elif st.experimental_user.email == customer2:
-        display_content(email=customer2)
-    elif st.experimental_user.email == customer3:
-        display_content(email=customer3)
-    elif st.experimental_user.email == 'test@localhost.com':
-        display_content(email='test@localhost.com')
-    else:
-        st.header("Please contact us to get access!")
-        st.subheader(st.experimental_user.email)
-        st.write("Share this email for access")
+    # Form
+    with st.form("my_form", clear_on_submit=True):
+        st.write("Login with email")
+        email = st.text_input("Enter email")
+        # Every form must have a submit button.
+        submitted = st.form_submit_button("Submit")
+        st.success("Test Email : test@localhost.com")
 
+    if submitted:
+        if email in ADMIN_USERS:
+            display_content(email=email)
+        else:
+            st.error("Access Denied")
+            st.header("Please contact us to get access!")
+    else:
+        st.info("Enter email to continue")
 
 if __name__ == '__main__':
     main()
