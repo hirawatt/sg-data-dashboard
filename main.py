@@ -15,6 +15,7 @@ api_secret = st.secrets['api_secret']
 # customers
 customer1 = st.secrets['customers']['customer1']
 customer2 = st.secrets['customers']['customer2']
+customer3 = st.secrets['customers']['customer3']
 
 # streamlit
 st.set_page_config(
@@ -93,6 +94,8 @@ def main() -> None:
         display_content(email=customer1)
     elif st.experimental_user.email == customer2:
         display_content(email=customer2)
+    elif st.experimental_user.email == customer3:
+        display_content(email=customer3)
     elif st.experimental_user.email == 'test@localhost.com':
         display_content(email='test@localhost.com')
     else:
