@@ -5,6 +5,7 @@ from datetime import datetime
 import boto3
 from io import BytesIO, StringIO
 import zipfile
+from supabase import create_client, Client
 
 # credentials
 page_title = st.secrets['initialize']['page_title']
@@ -22,6 +23,9 @@ api_secret = st.secrets['api_secret']
 accountid = st.secrets['cloudflare']['accountid']
 access_key_id = st.secrets['cloudflare']['access_key_id']
 access_key_secret = st.secrets['cloudflare']['access_key_secret']
+# Supabase config
+supabase_url = st.secrets['supabase']['supabase_url']
+supabase_key = st.secrets['supabase']['supabase_key']
 
 # R2 buckets setup
 @st.cache_resource()
@@ -66,8 +70,6 @@ def get_data(filename):
     z = zipfile.ZipFile(buffer)
     return z
 
-
-
 # footer & credits section
 def footer():
     st.markdown('<div style="text-align: center">Made with ❤️ by <a href="{}">{}</a></div>'.format(website, name), unsafe_allow_html=True)
@@ -99,6 +101,16 @@ hide_table_row_index = """
 st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
 # functions
+@st.cache_resource
+def init_connection():
+    return create_client(supabase_url, supabase_key)
+
+supabase = init_connection()
+
+@st.cache_data(ttl=60000)
+def run_query():
+    return supabase.table("owner_creds").select("*").execute()
+
 def zip_info_to_csv(z, f):
     file_date_time = f.date_time # file last modified datetime
     #file_name = f.filename
@@ -109,10 +121,10 @@ def zip_info_to_csv(z, f):
 
     return str_data 
 
-def display_content(email):
+def display_content(userid):
     col1, col2 = st.columns([5, 2])
     col1.title('⛽ ' + page_title )
-    col2.subheader('Welcome, %s!' % email)
+    col2.subheader('Welcome, %s!' % userid)
     st.sidebar.title(':cyclone: ' +  sidebar_title)
     date = st.sidebar.date_input("Select Date")
     st.sidebar.info("Data only available for present date")
@@ -136,7 +148,7 @@ def display_content(email):
     data_file_4 = zip_info_to_csv(z, f4)
     # TD - add filename logic based on login credentials from supabase
     #data_file_2 = "./data/" + email.split("@")[0] + "/pump-details.csv"
-
+    # TD - use st.dataframe to freeze 1st column in summary
     with tab1:
         st.header("{}".format(date.strftime('%d %B %Y')))
         df1 = pd.read_csv(data_file_1)
@@ -164,18 +176,26 @@ def main() -> None:
         st.write("Login with email")
         email = st.text_input("Enter email")
         submitted = st.form_submit_button("Submit")
-        st.info("Demo Credentials:")
-        st.code("test@localhost.com")
+        
 
+    rows = run_query()
+    # TD - use set instead of list to harden security
+    userid_list = []
+    for i in range(len(rows.data)):
+        # TD - set userid as phone_no
+        userid_list.append(rows.data[i]['email'])
+    
     if submitted:
-        if email in ADMIN_USERS:
-            display_content(email=email)
+        # TD - setup phone_no & pin login setup
+        if email in userid_list:
+            display_content(userid=email)
             form.empty()
         else:
             st.error("Access Denied")
             st.header("Please contact us to get access!")
     else:
-        st.info("Enter email to continue")
+        st.info("Demo Credentials:")
+        st.code("test@localhost.com")
     
 
 if __name__ == '__main__':
