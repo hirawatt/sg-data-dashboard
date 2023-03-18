@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime
 import boto3
 from io import BytesIO, StringIO
-import csv
 import zipfile
 
 # credentials
@@ -65,18 +64,7 @@ def get_data(filename):
     contents = obj['Body'].read()
     buffer = BytesIO(contents)
     z = zipfile.ZipFile(buffer)
-    file_info = z.infolist()
-    for f in file_info[1:]: # skip 1st element of list which is not a file
-        file_date_time = f.date_time
-        st.info("Last Updated: {}".format(datetime(*file_date_time).strftime('%d %B %Y')))
-        # Use - get filename from ZipInfo object
-        st.write("File: {}".format(f.filename))
-        # Use - Decode in csv format
-        data = z.read(f).decode("utf-8")
-        str_data = StringIO(data)
-        str_data.seek(0)
-        csv_df = pd.read_csv(str_data)
-        st.table(csv_df)
+    return z
 
 
 
@@ -111,6 +99,16 @@ hide_table_row_index = """
 st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
 # functions
+def zip_info_to_csv(z, f):
+    file_date_time = f.date_time # file last modified datetime
+    #file_name = f.filename
+    # Use - Decode in csv format
+    data = z.read(f).decode("utf-8")
+    str_data = StringIO(data)
+    str_data.seek(0)
+
+    return str_data 
+
 def display_content(email):
     col1, col2 = st.columns([5, 2])
     col1.title('⛽ ' + page_title )
@@ -119,13 +117,25 @@ def display_content(email):
     date = st.sidebar.date_input("Select Date")
     st.sidebar.info("Data only available for present date")
 
-    tab1, tab2, tab3 = st.tabs(["Daily Report", "Pump Details", "Pump-Wise Sales"])
-    data_file_1 = "./data/" + email.split("@")[0] + "/daily-report.csv"
-    data_file_2 = "./data/" + email.split("@")[0] + "/pump-details.csv"
-    data_file_3 = "./data/" + email.split("@")[0] + "/pump-wise-sales.csv"
-    # TD - add filename logic based on login credentials from supabase
-    get_data(filename=file_list[1])
+    tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
+    # zip info file - z
+    z = get_data(filename=file_list[1])
+    file_info = z.infolist()
+    # skip 1st element of list which is not a file
+    f1 = file_info[4] # sr_sum.csv
+    f2 = file_info[2] # sr_m.csv
+    f3 = file_info[5] # sr_t.csv
+    f4 = file_info[3] # sr_mr.csv
 
+    # TD - add file modified to display
+    #st.info("Last Updated: {}".format(datetime(*file_date_time).strftime('%d %B %Y')))
+    
+    data_file_1 = zip_info_to_csv(z, f1)
+    data_file_2 = zip_info_to_csv(z, f2)
+    data_file_3 = zip_info_to_csv(z, f3)
+    data_file_4 = zip_info_to_csv(z, f4)
+    # TD - add filename logic based on login credentials from supabase
+    #data_file_2 = "./data/" + email.split("@")[0] + "/pump-details.csv"
 
     with tab1:
         st.header("{}".format(date.strftime('%d %B %Y')))
@@ -139,6 +149,10 @@ def display_content(email):
         st.header("{}".format(date.strftime('%d %B %Y')))
         df3 = pd.read_csv(data_file_3)
         st.table(df3)
+    with tab4:
+        st.header("{}".format(date.strftime('%d %B %Y')))
+        df4 = pd.read_csv(data_file_4)
+        st.table(df4)
     return None
 
 def main() -> None:
