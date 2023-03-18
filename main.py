@@ -2,6 +2,9 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 from datetime import datetime
+import boto3
+from io import BytesIO
+import zipfile
 
 # credentials
 page_title = st.secrets['initialize']['page_title']
@@ -15,7 +18,20 @@ api_secret = st.secrets['api_secret']
 # customers
 #customer1 = st.secrets['customers']['customer1']
 #customer2 = st.secrets['customers']['customer2']
-#customer3 = st.secrets['customers']['customer3']
+# R2 config
+accountid = st.secrets['cloudflare']['accountid']
+access_key_id = st.secrets['cloudflare']['access_key_id']
+access_key_secret = st.secrets['cloudflare']['access_key_secret']
+
+# R2 buckets setup
+@st.cache_resource()
+def database_r2():
+    s3 = boto3.client('s3',
+        endpoint_url = 'https://{}.r2.cloudflarestorage.com'.format(accountid),
+        aws_access_key_id = '{}'.format(access_key_id),
+        aws_secret_access_key = '{}'.format(access_key_secret)
+    )
+    return s3
 
 # streamlit
 st.set_page_config(
@@ -28,6 +44,35 @@ st.set_page_config(
         "About": "Softgun Dashboard App",
     },
 )
+
+# R2 data operations
+bucketName = 'softgun'
+#objectName = 'softgun-data-f1.zip'
+objectName = 'master-data.csv'
+fileName = 'datafile.zip'
+file_list = []
+last_modified = []
+
+# download file
+s3 = database_r2()
+zipped_keys =  s3.list_objects_v2(Bucket=bucketName)
+for key in zipped_keys['Contents']:
+    file_list.append(key['Key'])
+    last_modified.append(key['LastModified'])
+st.write(file_list, last_modified)
+
+for i in range(len(file_list)):
+    obj = s3.get_object(Bucket=bucketName, Key=file_list[i])
+    contents = obj['Body'].read()
+    try:
+        st.write(contents.decode("utf-8"))
+    except:
+        buffer = BytesIO(contents)
+        z = zipfile.ZipFile(buffer)
+        for filename in z.namelist():
+            file_info = z.getinfo(filename)
+            st.write(file_info)
+
 
 # footer & credits section
 def footer():
