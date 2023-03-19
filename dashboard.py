@@ -134,7 +134,10 @@ def logout():
 def tab_display(date, data_file):
     st.header("{}".format(date.strftime('%d %B %Y')))
     df = pd.read_csv(data_file)
-    return df
+    newdf1 = df.dropna(thresh=2)
+    newdf2 = newdf1.dropna(axis="columns")
+    newdf = newdf2.fillna(0)
+    return newdf
 
 def display_content(userid):
     col1, col2 = st.columns([5, 2])
@@ -155,11 +158,8 @@ def display_content(userid):
     f3 = file_info[5] # sr_t.csv
     f4 = file_info[3] # sr_mr.csv
     files = [f1, f2, f3, f4]
-
-    # TD - add file modified to display
-    #st.info("Last Updated: {}".format(datetime(*file_date_time).strftime('%d %B %Y')))
-    
     data_list = zip_info_to_csv(z, files)
+    
     # TD - add filename logic based on login credentials from supabase
     # TD - use st.dataframe to freeze 1st column in summary
     with tab1:
