@@ -113,20 +113,28 @@ def run_query():
 def insert_query(filename, pin):
     return supabase.table("owner_creds").update({"pin": pin, "pin_set": True}).eq("filename", filename).execute()
 
-def zip_info_to_csv(z, f):
-    file_date_time = f.date_time # file last modified datetime
-    #file_name = f.filename
-    # Use - Decode in csv format
-    data = z.read(f).decode("utf-8")
-    str_data = StringIO(data)
-    str_data.seek(0)
+def zip_info_to_csv(z, files):
+    strdata = []
+    for f in files:
+        file_date_time = f.date_time # file last modified datetime
+        #file_name = f.filename
+        # Use - Decode in csv format
+        data = z.read(f).decode("utf-8")
+        str_data = StringIO(data)
+        str_data.seek(0)
+        strdata.append(str_data)
 
-    return str_data 
+    return strdata
 
 def logout():
     del st.session_state.user
     del st.session_state.userid
     del st.session_state.passwd
+
+def tab_display(date, data_file):
+    st.header("{}".format(date.strftime('%d %B %Y')))
+    df = pd.read_csv(data_file)
+    return df
 
 def display_content(userid):
     col1, col2 = st.columns([5, 2])
@@ -138,7 +146,7 @@ def display_content(userid):
     st.sidebar.info("Data only available for present date")
 
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
-    # zip info file - z
+    # zipinfo file - z
     z = get_data(filename=file_list[1])
     file_info = z.infolist()
     # skip 1st element of list which is not a file
@@ -146,34 +154,26 @@ def display_content(userid):
     f2 = file_info[2] # sr_m.csv
     f3 = file_info[5] # sr_t.csv
     f4 = file_info[3] # sr_mr.csv
+    files = [f1, f2, f3, f4]
 
     # TD - add file modified to display
     #st.info("Last Updated: {}".format(datetime(*file_date_time).strftime('%d %B %Y')))
-    # TD - Download zip file button
     
-    data_file_1 = zip_info_to_csv(z, f1)
-    data_file_2 = zip_info_to_csv(z, f2)
-    data_file_3 = zip_info_to_csv(z, f3)
-    data_file_4 = zip_info_to_csv(z, f4)
+    data_list = zip_info_to_csv(z, files)
     # TD - add filename logic based on login credentials from supabase
-    #data_file_2 = "./data/" + email.split("@")[0] + "/pump-details.csv"
     # TD - use st.dataframe to freeze 1st column in summary
     with tab1:
-        st.header("{}".format(date.strftime('%d %B %Y')))
-        df1 = pd.read_csv(data_file_1)
-        st.table(df1)
+        df = tab_display(date, data_list[0])
+        st.table(df)
     with tab2:
-        st.header("{}".format(date.strftime('%d %B %Y')))
-        df2 = pd.read_csv(data_file_2)
-        st.table(df2)
+        df = tab_display(date, data_list[1])
+        st.table(df)
     with tab3:
-        st.header("{}".format(date.strftime('%d %B %Y')))
-        df3 = pd.read_csv(data_file_3)
-        st.table(df3)
+        df = tab_display(date, data_list[2])
+        st.table(df)
     with tab4:
-        st.header("{}".format(date.strftime('%d %B %Y')))
-        df4 = pd.read_csv(data_file_4)
-        st.table(df4)
+        df = tab_display(date, data_list[3])
+        st.table(df)
     return None
 
 def new_user_setup(rows, filename, index, phone_no, form1, form2):
