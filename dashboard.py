@@ -68,6 +68,13 @@ def get_data(filename):
     contents = obj['Body'].read()
     buffer = BytesIO(contents)
     z = zipfile.ZipFile(buffer)
+    st.download_button(
+        label="Download all files",
+        data=buffer,
+        file_name='softgun-data.zip',
+        mime='application/zip',
+        use_container_width=True
+    )
     return z
 
 # footer & credits section
@@ -104,7 +111,7 @@ def run_query():
 
 @st.cache_data()
 def insert_query(filename, pin):
-    return supabase.table("owner_creds").update({"pin": pin}).eq("filename", filename).execute()
+    return supabase.table("owner_creds").update({"pin": pin, "pin_set": True}).eq("filename", filename).execute()
 
 def zip_info_to_csv(z, f):
     file_date_time = f.date_time # file last modified datetime
@@ -119,12 +126,12 @@ def zip_info_to_csv(z, f):
 def logout():
     del st.session_state.user
     del st.session_state.userid
-    del st.session_state.password
+    del st.session_state.passwd
 
 def display_content(userid):
     col1, col2 = st.columns([5, 2])
     col2.button("Logout", on_click=logout, use_container_width=True)
-    col1.title('⛽ ' + page_title )
+    col1.header('⛽ ' + page_title )
     col2.subheader('{}'.format(userid))
     st.sidebar.title(':cyclone: ' +  sidebar_title)
     date = st.sidebar.date_input("Select Date")
@@ -170,21 +177,18 @@ def display_content(userid):
     return None
 
 def new_user_setup(rows, filename, index, phone_no, form1, form2):
-    del st.session_state.password
     # TD - setup Phone No. Verification with OTP
     with form2.form("new_user_setup", clear_on_submit=True):
         form1.empty()
         st.success("New User Setup")
         st.info("Verify you phone no using OTP")
-        st.session_state.phone = st.number_input("Enter Mobile Number", step=1)
-        st.session_state.set_pass = st.text_input("Enter password")
-        st.session_state.confirm_pass = st.text_input("Confirm password")
+        st.session_state.phone = st.text_input("Enter Mobile Number")
+        st.text_input("Enter password", type="password", key="password")
         st.form_submit_button("Set Password")
     # TD - add to database - error - st.session_state.submit_pass
     if st.session_state["FormSubmitter:new_user_setup-Set Password"]:
-        if (st.session_state.set_pass == st.session_state.confirm_pass) and (st.session_state.phone == phone_no):
-            st.session_state.password = st.session_state.set_pass
-            response = insert_query(filename, st.session_state.set_pass)
+        if (st.session_state.phone == phone_no):
+            response = insert_query(filename, st.session_state.password)
             st.write(response)
             st.session_state.user = rows.data[index]["email"]
         else:
@@ -210,7 +214,7 @@ def main() -> None:
         with form1.form("login_form", clear_on_submit=True):
             st.write("Login Form")
             st.session_state.userid = st.text_input("Userid")
-            st.session_state.password = st.text_input("Password")
+            st.session_state.passwd = st.text_input("Password", type="password")
             st.session_state.form_submit = st.form_submit_button("Enter")
         
         # on userid submit
@@ -225,11 +229,11 @@ def main() -> None:
                 phone_no = rows.data[index]["phone_no"]
                 if pin_set:
                     # old user dashboard success
-                    if (st.session_state.userid in userid_list) and (st.session_state.password == pin):
+                    if (st.session_state.userid in userid_list) and (st.session_state.passwd == pin):
                         form1.empty()
                         st.session_state.user = rows.data[index]["email"]
                         display_content(userid=st.session_state.userid)
-                    elif (st.session_state.password != pin):
+                    elif (st.session_state.passwd != pin):
                         st.warning("Incorrect Password")
                 # new user setup
                 elif not pin_set:
