@@ -7,4 +7,7 @@ from supabase import create_client, Client
 supabase_url = st.secrets['supabase']['supabase_url']
 supabase_key = st.secrets['supabase']['supabase_key']
 
-st.info("Login from Dashboard")
+if st.session_state.userid:
+    st.header("Coming Soon!")
+else:
+    st.info("Login from Dashboard")

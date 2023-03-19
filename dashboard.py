@@ -79,15 +79,6 @@ def footer():
             height=80
         )
 
-# USERS
-ADMIN_USERS = {
-    'customer1@gmail.com',
-    'customer2@gmail.com',
-    'test@localhost.com'
-}
-#for i in ADMIN_USERS:
-#    print(i)
-
 # hide col0 in streamlit
 # CSS to inject contained in a string
 hide_table_row_index = """
@@ -111,6 +102,10 @@ supabase = init_connection()
 def run_query():
     return supabase.table("owner_creds").select("*").execute()
 
+@st.cache_data()
+def insert_query(filename, pin):
+    return supabase.table("owner_creds").update({"pin": pin}).eq("filename", filename).execute()
+
 def zip_info_to_csv(z, f):
     file_date_time = f.date_time # file last modified datetime
     #file_name = f.filename
@@ -121,10 +116,16 @@ def zip_info_to_csv(z, f):
 
     return str_data 
 
+def logout():
+    del st.session_state.user
+    del st.session_state.userid
+    del st.session_state.password
+
 def display_content(userid):
     col1, col2 = st.columns([5, 2])
+    col2.button("Logout", on_click=logout, use_container_width=True)
     col1.title('⛽ ' + page_title )
-    col2.subheader('Welcome, %s!' % userid)
+    col2.subheader('{}'.format(userid))
     st.sidebar.title(':cyclone: ' +  sidebar_title)
     date = st.sidebar.date_input("Select Date")
     st.sidebar.info("Data only available for present date")
@@ -141,6 +142,7 @@ def display_content(userid):
 
     # TD - add file modified to display
     #st.info("Last Updated: {}".format(datetime(*file_date_time).strftime('%d %B %Y')))
+    # TD - Download zip file button
     
     data_file_1 = zip_info_to_csv(z, f1)
     data_file_2 = zip_info_to_csv(z, f2)
@@ -167,36 +169,87 @@ def display_content(userid):
         st.table(df4)
     return None
 
-def main() -> None:
-    # Start Writing Code Here
-    #footer()
-    form = st.empty()
-    # Form
-    with form.form("my_form", clear_on_submit=True):
-        st.write("Login with email")
-        email = st.text_input("Enter email")
-        submitted = st.form_submit_button("Submit")
-        
-
-    rows = run_query()
-    # TD - use set instead of list to harden security
-    userid_list = []
-    for i in range(len(rows.data)):
-        # TD - set userid as phone_no
-        userid_list.append(rows.data[i]['email'])
-    
-    if submitted:
-        # TD - setup phone_no & pin login setup
-        if email in userid_list:
-            display_content(userid=email)
-            form.empty()
+def new_user_setup(rows, filename, index, phone_no, form1, form2):
+    del st.session_state.password
+    # TD - setup Phone No. Verification with OTP
+    with form2.form("new_user_setup", clear_on_submit=True):
+        form1.empty()
+        st.success("New User Setup")
+        st.info("Verify you phone no using OTP")
+        st.session_state.phone = st.number_input("Enter Mobile Number", step=1)
+        st.session_state.set_pass = st.text_input("Enter password")
+        st.session_state.confirm_pass = st.text_input("Confirm password")
+        st.form_submit_button("Set Password")
+    # TD - add to database - error - st.session_state.submit_pass
+    if st.session_state["FormSubmitter:new_user_setup-Set Password"]:
+        if (st.session_state.set_pass == st.session_state.confirm_pass) and (st.session_state.phone == phone_no):
+            st.session_state.password = st.session_state.set_pass
+            response = insert_query(filename, st.session_state.set_pass)
+            st.write(response)
+            st.session_state.user = rows.data[index]["email"]
         else:
-            st.error("Access Denied")
-            st.header("Please contact us to get access!")
+            st.warning("Enter same password")
+
+def main() -> None:
+    #footer()
+    form1 = st.empty()
+    form2 = st.empty()
+    if 'form_submit' not in st.session_state:
+        st.session_state.form_submit = False
+
+    if (st.session_state.get('user')) is None:
+        # Get data from supabase
+        rows = run_query()
+
+        userid_list = []
+        for i in range(len(rows.data)):
+            # TD - set userid as phone_no
+            userid_list.append(rows.data[i]['email'])
+
+        # login form
+        with form1.form("login_form", clear_on_submit=True):
+            st.write("Login Form")
+            st.session_state.userid = st.text_input("Userid")
+            st.session_state.password = st.text_input("Password")
+            st.session_state.form_submit = st.form_submit_button("Enter")
+        
+        # on userid submit
+        if st.session_state.form_submit:
+            # TD - setup phone_no & pin login setup
+            # userid correct
+            if (st.session_state.userid in userid_list):
+                index = userid_list.index(st.session_state.userid)
+                pin = rows.data[index]["pin"]
+                pin_set = rows.data[index]["pin_set"]
+                filename = rows.data[index]["filename"]
+                phone_no = rows.data[index]["phone_no"]
+                if pin_set:
+                    # old user dashboard success
+                    if (st.session_state.userid in userid_list) and (st.session_state.password == pin):
+                        form1.empty()
+                        st.session_state.user = rows.data[index]["email"]
+                        display_content(userid=st.session_state.userid)
+                    elif (st.session_state.password != pin):
+                        st.warning("Incorrect Password")
+                # new user setup
+                elif not pin_set:
+                    new_user_setup(rows, filename, index, phone_no, form1, form2)
+                else:
+                    st.write("Encountered Edge Case")
+
+            # userid not correct
+            else:
+                col1, col2 = st.columns(2)
+                col1.error("Access Denied")
+                col2.header("Please Contact to get access!")
+        # userid not submitted
+        else:
+            col1, col2 = st.columns(2)
+            col1.info("Demo Credentials")
+            col2.code("test@localhost.com")
     else:
-        st.info("Demo Credentials:")
-        st.code("test@localhost.com")
-    
+        form1.empty()
+        display_content(userid=st.session_state.userid)
 
 if __name__ == '__main__':
     main()
