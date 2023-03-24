@@ -150,13 +150,15 @@ def display_content(userid):
 
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
     # zipinfo file - z
-    z = get_data(filename=file_list[1])
+    file_str = "softgun-{}".format(userid)
+    index = [idx for idx, s in enumerate(file_list) if file_str in s][0]
+    z = get_data(filename=file_list[index])
     file_info = z.infolist()
     # skip 1st element of list which is not a file
-    f1 = file_info[4] # sr_sum.csv
-    f2 = file_info[2] # sr_m.csv
-    f3 = file_info[5] # sr_t.csv
-    f4 = file_info[3] # sr_mr.csv
+    f1 = file_info[3] # sr_sum.csv
+    f2 = file_info[1] # sr_m.csv
+    f3 = file_info[4] # sr_t.csv
+    f4 = file_info[2] # sr_mr.csv
     files = [f1, f2, f3, f4]
     data_list = zip_info_to_csv(z, files)
     
