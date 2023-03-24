@@ -192,7 +192,7 @@ def new_user_setup(rows, filename, index, phone_no, form1, form2):
         if (st.session_state.phone == phone_no):
             response = insert_query(filename, st.session_state.password)
             st.write(response)
-            st.session_state.user = rows.data[index]["email"]
+            st.session_state.user = rows.data[index]["user_id"]
         else:
             st.warning("Enter same password")
 
@@ -210,7 +210,7 @@ def main() -> None:
         userid_list = []
         for i in range(len(rows.data)):
             # TD - set userid as phone_no
-            userid_list.append(rows.data[i]['email'])
+            userid_list.append(rows.data[i]['user_id'])
 
         # login form
         with form1.form("login_form", clear_on_submit=True):
@@ -233,7 +233,7 @@ def main() -> None:
                     # old user dashboard success
                     if (st.session_state.userid in userid_list) and (st.session_state.passwd == pin):
                         form1.empty()
-                        st.session_state.user = rows.data[index]["email"]
+                        st.session_state.user = rows.data[index]["user_id"]
                         display_content(userid=st.session_state.userid)
                     elif (st.session_state.passwd != pin):
                         st.warning("Incorrect Password")
