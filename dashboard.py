@@ -96,7 +96,7 @@ hide_table_row_index = """
             """
 
 # Inject CSS with Markdown
-st.markdown(hide_table_row_index, unsafe_allow_html=True)
+#st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
 # functions
 @st.cache_resource
@@ -166,16 +166,16 @@ def display_content(userid):
     # TD - use st.dataframe to freeze 1st column in summary
     with tab1:
         df = tab_display(date, data_list[0])
-        st.table(df)
+        st.dataframe(df, use_container_width=True)
     with tab2:
         df = tab_display(date, data_list[1])
-        st.table(df)
+        st.dataframe(df, use_container_width=True)
     with tab3:
         df = tab_display(date, data_list[2])
-        st.table(df)
+        st.dataframe(df, use_container_width=True)
     with tab4:
         df = tab_display(date, data_list[3])
-        st.table(df)
+        st.dataframe(df, use_container_width=True)
     return None
 
 def new_user_setup(rows, filename, index, phone_no, form1, form2):

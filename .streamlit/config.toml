@@ -6,13 +6,9 @@ textColor="#262730"
 font="sans serif"
 base="light"
 
-[global]
-dataFrameSerialization = "legacy"
-
 [server]
 maxUploadSize = 10
 runOnSave = true
 
 [runner]
 magicEnabled = false
-fastReruns = false
