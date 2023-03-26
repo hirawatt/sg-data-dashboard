@@ -132,8 +132,7 @@ def logout():
     del st.session_state.userid
     del st.session_state.passwd
 
-def tab_display(date, data_file):
-    st.header("{}".format(date.strftime('%d %B %Y')))
+def tab_display(data_file):
     df = pd.read_csv(data_file)
     newdf1 = df.dropna(thresh=2)
     newdf2 = newdf1.dropna(axis="columns")
@@ -142,9 +141,9 @@ def tab_display(date, data_file):
 
 def display_content(userid):
     col1, col2 = st.columns([5, 2])
-    col2.button("Logout", on_click=logout, use_container_width=True)
-    col1.header('⛽ ' + page_title )
-    col2.subheader('{}'.format(userid))
+    col2.button("Logout {}".format(userid), on_click=logout, use_container_width=True)
+    #col1.header('⛽ ' + page_title )
+    #col2.subheader('{}'.format(userid))
     st.sidebar.title(':cyclone: ' +  sidebar_title)
     date = st.sidebar.date_input("Select Date")
     st.sidebar.info("Data only available for present date")
@@ -156,26 +155,31 @@ def display_content(userid):
     z = get_data(filename=file_list[index], userid=userid)
     file_info = z.infolist()
     # skip 1st element of list which is not a file
-    f1 = file_info[3] # sr_sum.csv
-    f2 = file_info[1] # sr_m.csv
-    f3 = file_info[4] # sr_t.csv
-    f4 = file_info[2] # sr_mr.csv
-    files = [f1, f2, f3, f4]
+    f1 = file_info[0] # 1_sr_sum.csv
+    f2 = file_info[1] # 2_sr_m.csv
+    f3 = file_info[2] # 3_sr_t.csv
+    f4 = file_info[3] # 4_sr_mr.csv
+    f5 = file_info[4] # 5_sr_info.csv
+    files = [f1, f2, f3, f4, f5]
     data_list = zip_info_to_csv(z, files)
+
+    user_info = tab_display(data_list[4])
+    st.sidebar.info("Last Updated by " + user_info.columns[0])
+    #st.sidebar.success("{}".format(date.strftime('%d %B %Y')))
     
     # TD - add filename logic based on login credentials from supabase
     # TD - use st.dataframe to freeze 1st column in summary
     with tab1:
-        df = tab_display(date, data_list[0])
+        df = tab_display(data_list[0])
         st.dataframe(df, use_container_width=True)
     with tab2:
-        df = tab_display(date, data_list[1])
+        df = tab_display(data_list[1])
         st.dataframe(df, use_container_width=True)
     with tab3:
-        df = tab_display(date, data_list[2])
+        df = tab_display(data_list[2])
         st.dataframe(df, use_container_width=True)
     with tab4:
-        df = tab_display(date, data_list[3])
+        df = tab_display(data_list[3])
         st.dataframe(df, use_container_width=True)
     return None
 
