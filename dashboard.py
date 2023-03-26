@@ -207,7 +207,6 @@ def main() -> None:
     if (st.session_state.get('user')) is None:
         # Get data from supabase
         rows = run_query()
-
         userid_list = []
         for i in range(len(rows.data)):
             # TD - set userid as phone_no
@@ -252,8 +251,10 @@ def main() -> None:
         # userid not submitted
         else:
             col1, col2 = st.columns(2)
-            col1.info("Demo Credentials")
-            col2.code("test@localhost.com")
+            col1.info("Demo Userid")
+            col2.code("SG001")
+            col1.info("Demo Password")
+            col2.code("123456")
     else:
         form1.empty()
         display_content(userid=st.session_state.userid)
