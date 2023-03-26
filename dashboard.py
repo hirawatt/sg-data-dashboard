@@ -6,6 +6,7 @@ import boto3
 from io import BytesIO, StringIO
 import zipfile
 from supabase import create_client, Client
+import numpy as np
 
 # credentials
 page_title = st.secrets['initialize']['page_title']
@@ -63,7 +64,7 @@ for key in zipped_keys['Contents']:
     file_list.append(key['Key'])
 
 # get data for zip files stored in s3 buckets
-def get_data(filename):
+def get_data(filename, userid):
     obj = s3.get_object(Bucket=bucketName, Key=filename)
     contents = obj['Body'].read()
     buffer = BytesIO(contents)
@@ -71,7 +72,7 @@ def get_data(filename):
     st.download_button(
         label="Download all files",
         data=buffer,
-        file_name='softgun-data.zip',
+        file_name='softgun-{}.zip'.format(userid),
         mime='application/zip',
         use_container_width=True
     )
@@ -152,7 +153,7 @@ def display_content(userid):
     # zipinfo file - z
     file_str = "softgun-{}".format(userid)
     index = [idx for idx, s in enumerate(file_list) if file_str in s][0]
-    z = get_data(filename=file_list[index])
+    z = get_data(filename=file_list[index], userid=userid)
     file_info = z.infolist()
     # skip 1st element of list which is not a file
     f1 = file_info[3] # sr_sum.csv
