@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
-from datetime import datetime
+import datetime
 import boto3
 from io import BytesIO, StringIO
 import zipfile
@@ -17,14 +17,11 @@ buymeacoffee = st.secrets['credits']['buymeacoffee']
 api_key = st.secrets['api_key']
 api_secret = st.secrets['api_secret']
 
-# customers
-#customer1 = st.secrets['customers']['customer1']
-#customer2 = st.secrets['customers']['customer2']
 # R2 config
 accountid = st.secrets['cloudflare']['accountid']
 access_key_id = st.secrets['cloudflare']['access_key_id']
 access_key_secret = st.secrets['cloudflare']['access_key_secret']
-# Supabase config
+# supabase config
 supabase_url = st.secrets['supabase']['supabase_url']
 supabase_key = st.secrets['supabase']['supabase_key']
 
@@ -57,7 +54,7 @@ objectName = 'master-data.csv'
 fileName = 'datafile.zip'
 file_list = []
 
-# download files list from s3
+# download files list from r2
 s3 = database_r2()
 zipped_keys =  s3.list_objects_v2(Bucket=bucketName)
 for key in zipped_keys['Contents']:
@@ -151,7 +148,7 @@ def display_content(userid):
     #col2.subheader('{}'.format(userid))
     st.sidebar.title(':cyclone: ' +  sidebar_title)
     date = st.sidebar.date_input("Select Date")
-    showall = st.sidebar.checkbox("Show all dates")
+    daterange = st.sidebar.radio("Select Dates", ["single date", "all dates", "last 7 days"])
     st.sidebar.info("Data only available for present date")
 
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
@@ -181,26 +178,28 @@ def display_content(userid):
     with tab2:
         df = tab_display(data_list[1])
         df1 = df_date_index(df)
-        df2 = filter_df_by_date(df1, date, showall)
+        df2 = filter_df_by_date(df1, date, daterange)
         st.dataframe(df2, use_container_width=True)
     with tab3:
         df = tab_display(data_list[2])
         df1 = df_date_index(df)
-        df2 = filter_df_by_date(df1, date, showall)
+        df2 = filter_df_by_date(df1, date, daterange)
         st.dataframe(df2, use_container_width=True)
     with tab4:
         df = tab_display(data_list[3])
         df1 = df_date_index(df)
-        df2 = filter_df_by_date(df1, date, showall)
+        df2 = filter_df_by_date(df1, date, daterange)
         st.dataframe(df2, use_container_width=True)
     return None
 
-def filter_df_by_date(df, date, showall):
-    if showall:
-        df = df
-    else:
+def filter_df_by_date(df, date, daterange):
+    if daterange == 'single date':
         mask = (df.index == date)
         df = df.loc[mask]
+    elif daterange == 'all dates':
+        df = df
+    elif daterange == 'last 7 days':
+        df = df[df.index > datetime.datetime.now().date() - datetime.timedelta(days=7)]
     return df
 
 def new_user_setup(rows, filename, index, phone_no, form1, form2):
