@@ -209,7 +209,7 @@ def main() -> None:
         rows = run_query()
         userid_list = []
         for i in range(len(rows.data)):
-            # TD - set userid as phone_no
+            # set userid column from row
             userid_list.append(rows.data[i]['user_id'])
 
         # login form
@@ -231,18 +231,15 @@ def main() -> None:
                 phone_no = rows.data[index]["phone_no"]
                 if pin_set:
                     # old user dashboard success
-                    if (st.session_state.userid in userid_list) and (st.session_state.passwd == pin):
+                    if (st.session_state.passwd == pin):
                         form1.empty()
                         st.session_state.user = rows.data[index]["user_id"]
                         display_content(userid=st.session_state.userid)
-                    elif (st.session_state.passwd != pin):
+                    else:
                         st.warning("Incorrect Password")
                 # new user setup
-                elif not pin_set:
-                    new_user_setup(rows, filename, index, phone_no, form1, form2)
                 else:
-                    st.write("Encountered Edge Case")
-
+                    new_user_setup(rows, filename, index, phone_no, form1, form2)
             # userid not correct
             else:
                 col1, col2 = st.columns(2)
