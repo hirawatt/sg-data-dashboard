@@ -139,6 +139,11 @@ def tab_display(data_file):
     newdf = newdf2.fillna(0)
     return newdf
 
+def df_date_index(df):
+    df['DATE'] = pd.to_datetime(df['DATE']).dt.date
+    df.set_index('DATE', inplace=True)
+    return df
+
 def display_content(userid):
     col1, col2 = st.columns([5, 2])
     col2.button("Logout {}".format(userid), on_click=logout, use_container_width=True)
@@ -174,13 +179,16 @@ def display_content(userid):
         st.dataframe(df, use_container_width=True)
     with tab2:
         df = tab_display(data_list[1])
-        st.dataframe(df, use_container_width=True)
+        df1 = df_date_index(df)
+        st.dataframe(df1, use_container_width=True)
     with tab3:
         df = tab_display(data_list[2])
-        st.dataframe(df, use_container_width=True)
+        df1 = df_date_index(df)
+        st.dataframe(df1, use_container_width=True)
     with tab4:
         df = tab_display(data_list[3])
-        st.dataframe(df, use_container_width=True)
+        df1 = df_date_index(df)
+        st.dataframe(df1, use_container_width=True)
     return None
 
 def new_user_setup(rows, filename, index, phone_no, form1, form2):
