@@ -151,6 +151,7 @@ def display_content(userid):
     #col2.subheader('{}'.format(userid))
     st.sidebar.title(':cyclone: ' +  sidebar_title)
     date = st.sidebar.date_input("Select Date")
+    showall = st.sidebar.checkbox("Show all dates")
     st.sidebar.info("Data only available for present date")
 
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
@@ -180,16 +181,27 @@ def display_content(userid):
     with tab2:
         df = tab_display(data_list[1])
         df1 = df_date_index(df)
-        st.dataframe(df1, use_container_width=True)
+        df2 = filter_df_by_date(df1, date, showall)
+        st.dataframe(df2, use_container_width=True)
     with tab3:
         df = tab_display(data_list[2])
         df1 = df_date_index(df)
-        st.dataframe(df1, use_container_width=True)
+        df2 = filter_df_by_date(df1, date, showall)
+        st.dataframe(df2, use_container_width=True)
     with tab4:
         df = tab_display(data_list[3])
         df1 = df_date_index(df)
-        st.dataframe(df1, use_container_width=True)
+        df2 = filter_df_by_date(df1, date, showall)
+        st.dataframe(df2, use_container_width=True)
     return None
+
+def filter_df_by_date(df, date, showall):
+    if showall:
+        df = df
+    else:
+        mask = (df.index == date)
+        df = df.loc[mask]
+    return df
 
 def new_user_setup(rows, filename, index, phone_no, form1, form2):
     # TD - setup Phone No. Verification with OTP
