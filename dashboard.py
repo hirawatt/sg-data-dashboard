@@ -62,6 +62,8 @@ for key in zipped_keys['Contents']:
 # get data for zip files stored in s3 buckets
 def get_data(filename, userid):
     obj = s3.get_object(Bucket=bucketName, Key=filename)
+    global lastmodified
+    lastmodified = obj["LastModified"]
     contents = obj['Body'].read()
     buffer = BytesIO(contents)
     z = zipfile.ZipFile(buffer)
@@ -172,6 +174,7 @@ def display_content(userid):
 
     user_info = tab_display(data_list[4])
     st.sidebar.info("Last Updated by " + user_info.columns[0])
+    last_updated.subheader('Last Upload Date : `{}`'.format(lastmodified.date()))
     #st.sidebar.success("{}".format(date.strftime('%d %B %Y')))
     
     # TD - add filename logic based on login credentials from supabase
@@ -266,7 +269,8 @@ def main() -> None:
                         st.session_state.user = rows.data[index]["user_id"]
                         c1, c2, c3 = st.columns([6, 3, 3])
                         c1.header('⛽ Pump : {}'.format(st.session_state.pump_name))
-                        c2.subheader('Last Upload Date : `{}`'.format(st.session_state.userid))
+                        global last_updated
+                        last_updated = c2.empty()
                         c3.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
                         display_content(userid=st.session_state.userid)
                     else:
@@ -290,7 +294,7 @@ def main() -> None:
         form1.empty()
         c1, c2, c3 = st.columns([6, 3, 3])
         c1.header('⛽ Pump : {}'.format(st.session_state.pump_name))
-        c2.subheader('Last Upload Date : `{}`'.format(st.session_state.userid))
+        last_updated = c2.empty()
         c3.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
         display_content(userid=st.session_state.userid)
 
