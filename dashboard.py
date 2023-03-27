@@ -166,6 +166,24 @@ def df_date_index(df):
     df.set_index('DATE', inplace=True)
     return df
 
+# style
+th_props = [
+    ('font-size', '14px'),
+    ('text-align', 'center'),
+    ('font-weight', 'bold'),
+    ('color', '#6d6d6d'),
+    ('background-color', '#f7ffff')
+    ]
+
+td_props = [
+    ('font-size', '16px')
+    ]
+
+styles = [
+    dict(selector="th", props=th_props),
+    dict(selector="td", props=td_props)
+    ]
+
 def display_content(userid, c2, c3):
     start_date = c2.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"))
     start = start_date.strftime("%Y-%m-%d")
@@ -198,22 +216,28 @@ def display_content(userid, c2, c3):
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
         c1, c2, c3 = st.columns([2, 4, 2])
-        c2.dataframe(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}"), use_container_width=True)
+        numRows = len(df2)
+        c2.dataframe(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}"), use_container_width=True, height=((numRows + 1) * 35 + 3))
+        #c2.table(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}").set_table_styles(styles))
     with tab2:
         df = tab_display(data_list[1])
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
-        st.dataframe(df2, use_container_width=True)
+        numRows = len(df2)
+        st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
+        #st.table(df2.style.set_table_styles(styles))
     with tab3:
         df = tab_display(data_list[2])
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
-        st.dataframe(df2, use_container_width=True)
+        numRows = len(df2)
+        st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab4:
         df = tab_display(data_list[3])
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
-        st.dataframe(df2, use_container_width=True)
+        numRows = len(df2)
+        st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     return None
 
 def filter_df_by_date(df, start_date, end_date):
