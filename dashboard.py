@@ -107,10 +107,6 @@ hide_menu_style = """
         """
 st.markdown(hide_menu_style, unsafe_allow_html=True)
 
-# pandas show floating numbers upto 2 decimal
-pd.set_option('display.precision', 2)
-pd.options.display.float_format = "{:,.2f}".format
-
 # functions
 @st.cache_resource
 def init_connection():
@@ -196,7 +192,7 @@ def display_content(userid):
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
         c1, c2, c3 = st.columns([2, 4, 2])
-        c2.dataframe(df2, use_container_width=True)
+        c2.dataframe(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}"), use_container_width=True)
     with tab2:
         df = tab_display(data_list[1])
         df1 = df_date_index(df)
