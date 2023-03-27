@@ -99,6 +99,14 @@ hide_table_row_index = """
 # Inject CSS with Markdown
 #st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
+# Hide streamlit menu
+hide_menu_style = """
+        <style>
+        #MainMenu {visibility: hidden;}
+        </style>
+        """
+st.markdown(hide_menu_style, unsafe_allow_html=True)
+
 # functions
 @st.cache_resource
 def init_connection():
@@ -172,8 +180,9 @@ def display_content(userid):
     files = [f1, f2, f3, f4, f5]
     data_list = zip_info_to_csv(z, files)
 
-    user_info = tab_display(data_list[4])
-    st.sidebar.info("Last Updated by " + user_info.columns[0])
+    # Last Updated by userid
+    #user_info = tab_display(data_list[4])
+    #st.sidebar.info("Last Updated by " + user_info.columns[0])
     last_updated.subheader('Last Upload Date : `{}`'.format(lastmodified.date()))
     #st.sidebar.success("{}".format(date.strftime('%d %B %Y')))
     
