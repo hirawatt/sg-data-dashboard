@@ -145,12 +145,17 @@ def df_date_index(df):
 def display_content(userid):
     c1, c2, c3 = st.columns([6, 3, 3])
     c1.header('⛽ Pump : {}'.format("Kolkata Pump"))
-    c2.subheader('Last Upload Date : {}'.format(userid))
+    c2.subheader('Last Upload Date : `{}`'.format(userid))
     c3.button("Logout {}".format(userid), on_click=logout, use_container_width=True)
     col1, col2, col3 = st.columns([5, 5, 3])
-    date = col1.date_input("From Date")
-    end_date = col2.date_input("To Date")
-    col3.subheader("Date Selected : {}".format(date))
+    date = col1.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"))
+    start = date.strftime("%Y-%m-%d")
+    end_date = col2.date_input("To Date", min_value=pd.to_datetime(start, format="%Y-%m-%d"), max_value=pd.to_datetime('today', format="%Y-%m-%d"))
+    end = end_date.strftime("%Y-%m-%d")
+    if start == end:
+        col3.subheader("Date Selected : `{}`".format(date))
+    else:
+        col3.subheader("Date Range : `{}` to `{}`".format(start, end))
     daterange = st.sidebar.radio("Select Dates", ["single date", "all dates", "last 7 days"])
 
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
