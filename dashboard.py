@@ -114,6 +114,9 @@ st.markdown("""
                     padding-top: 0.4rem;
                     padding-bottom: 0rem;
                 }
+            header {
+                width: 1rem;
+            }
         </style>
         """, unsafe_allow_html=True)
 
