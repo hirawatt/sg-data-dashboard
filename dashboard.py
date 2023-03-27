@@ -113,8 +113,6 @@ st.markdown("""
             .block-container {
                     padding-top: 0.4rem;
                     padding-bottom: 0rem;
-                    padding-left: 5rem;
-                    padding-right: 5rem;
                 }
         </style>
         """, unsafe_allow_html=True)
@@ -279,7 +277,7 @@ def main() -> None:
                     if (st.session_state.passwd == pin):
                         form1.empty()
                         st.session_state.user = rows.data[index]["user_id"]
-                        c1, c2, c3 = st.columns([8, 3, 3])
+                        c1, c2, c3 = st.columns([15, 3, 3])
                         c1.subheader('⛽ Pump : {}'.format(st.session_state.pump_name))
                         global last_updated
                         last_updated = st.sidebar.empty()
@@ -304,7 +302,7 @@ def main() -> None:
             col2.code("123456")
     else:
         form1.empty()
-        c1, c2, c3 = st.columns([8, 3, 3])
+        c1, c2, c3 = st.columns([15, 3, 3])
         c1.subheader('⛽ Pump : {}'.format(st.session_state.pump_name))
         last_updated = st.sidebar.empty()
         st.sidebar.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)

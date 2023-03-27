@@ -12,3 +12,6 @@ runOnSave = true
 
 [runner]
 magicEnabled = false
+
+[ui]
+hideTopBar = true
