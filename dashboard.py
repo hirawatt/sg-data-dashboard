@@ -111,7 +111,7 @@ st.markdown(hide_menu_style, unsafe_allow_html=True)
 st.markdown("""
         <style>
             .block-container {
-                    padding-top: 0.5em;
+                    padding-top: 0.4rem;
                     padding-bottom: 0rem;
                     padding-left: 5rem;
                     padding-right: 5rem;
@@ -165,16 +165,11 @@ def df_date_index(df):
     df.set_index('DATE', inplace=True)
     return df
 
-def display_content(userid):
-    col1, col2, col3 = st.columns([5, 5, 3])
-    start_date = col1.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"))
+def display_content(userid, c2, c3):
+    start_date = c2.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"))
     start = start_date.strftime("%Y-%m-%d")
-    end_date = col2.date_input("To Date", min_value=pd.to_datetime(start, format="%Y-%m-%d"), max_value=pd.to_datetime('today', format="%Y-%m-%d"))
+    end_date = c3.date_input("To Date", min_value=pd.to_datetime(start, format="%Y-%m-%d"), max_value=pd.to_datetime('today', format="%Y-%m-%d"))
     end = end_date.strftime("%Y-%m-%d")
-    if start == end:
-        col3.subheader("Date Selected : `{}`".format(start_date))
-    else:
-        col3.subheader("Date Range : `{}` to `{}`".format(start, end))
 
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
     # zipinfo file - z
@@ -195,7 +190,7 @@ def display_content(userid):
     #user_info = tab_display(data_list[4])
     #st.sidebar.info("Last Updated by " + user_info.columns[0])
     #st.sidebar.success("{}".format(date.strftime('%d %B %Y')))
-    last_updated.subheader('Last Upload Date : `{}`'.format(lastmodified.date()))
+    last_updated.write('Last Upload Date : `{}`'.format(lastmodified.date()))
     
     with tab1:
         df = tab_display(data_list[0])
@@ -284,12 +279,12 @@ def main() -> None:
                     if (st.session_state.passwd == pin):
                         form1.empty()
                         st.session_state.user = rows.data[index]["user_id"]
-                        c1, c2, c3 = st.columns([6, 3, 3])
-                        c1.header('⛽ Pump : {}'.format(st.session_state.pump_name))
+                        c1, c2, c3 = st.columns([8, 3, 3])
+                        c1.subheader('⛽ Pump : {}'.format(st.session_state.pump_name))
                         global last_updated
-                        last_updated = c2.empty()
-                        c3.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
-                        display_content(userid=st.session_state.userid)
+                        last_updated = st.sidebar.empty()
+                        st.sidebar.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
+                        display_content(st.session_state.userid, c2, c3)
                     else:
                         st.warning("Incorrect Password")
                 # new user setup
@@ -309,11 +304,11 @@ def main() -> None:
             col2.code("123456")
     else:
         form1.empty()
-        c1, c2, c3 = st.columns([6, 3, 3])
-        c1.header('⛽ Pump : {}'.format(st.session_state.pump_name))
-        last_updated = c2.empty()
-        c3.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
-        display_content(userid=st.session_state.userid)
+        c1, c2, c3 = st.columns([8, 3, 3])
+        c1.subheader('⛽ Pump : {}'.format(st.session_state.pump_name))
+        last_updated = st.sidebar.empty()
+        st.sidebar.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
+        display_content(st.session_state.userid, c2, c3)
 
 if __name__ == '__main__':
     main()
