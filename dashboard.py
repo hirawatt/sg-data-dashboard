@@ -129,6 +129,7 @@ def logout():
     del st.session_state.user
     del st.session_state.userid
     del st.session_state.passwd
+    del st.session_state.pump_name
 
 def tab_display(data_file):
     df = pd.read_csv(data_file)
@@ -143,10 +144,6 @@ def df_date_index(df):
     return df
 
 def display_content(userid):
-    c1, c2, c3 = st.columns([6, 3, 3])
-    c1.header('⛽ Pump : {}'.format("Kolkata Pump"))
-    c2.subheader('Last Upload Date : `{}`'.format(userid))
-    c3.button("Logout {}".format(userid), on_click=logout, use_container_width=True)
     col1, col2, col3 = st.columns([5, 5, 3])
     date = col1.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"))
     start = date.strftime("%Y-%m-%d")
@@ -235,7 +232,6 @@ def main() -> None:
     form2 = st.empty()
     if 'form_submit' not in st.session_state:
         st.session_state.form_submit = False
-
     if (st.session_state.get('user')) is None:
         # Get data from supabase
         rows = run_query()
@@ -261,11 +257,17 @@ def main() -> None:
                 pin_set = rows.data[index]["pin_set"]
                 filename = rows.data[index]["filename"]
                 phone_no = rows.data[index]["phone_no"]
+                if 'pump_state' not in st.session_state:
+                    st.session_state.pump_name = rows.data[index]["pump_name"]
                 if pin_set:
                     # old user dashboard success
                     if (st.session_state.passwd == pin):
                         form1.empty()
                         st.session_state.user = rows.data[index]["user_id"]
+                        c1, c2, c3 = st.columns([6, 3, 3])
+                        c1.header('⛽ Pump : {}'.format(st.session_state.pump_name))
+                        c2.subheader('Last Upload Date : `{}`'.format(st.session_state.userid))
+                        c3.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
                         display_content(userid=st.session_state.userid)
                     else:
                         st.warning("Incorrect Password")
@@ -286,6 +288,10 @@ def main() -> None:
             col2.code("123456")
     else:
         form1.empty()
+        c1, c2, c3 = st.columns([6, 3, 3])
+        c1.header('⛽ Pump : {}'.format(st.session_state.pump_name))
+        c2.subheader('Last Upload Date : `{}`'.format(st.session_state.userid))
+        c3.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
         display_content(userid=st.session_state.userid)
 
 if __name__ == '__main__':
