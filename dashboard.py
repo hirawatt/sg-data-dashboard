@@ -155,15 +155,14 @@ def df_date_index(df):
 
 def display_content(userid):
     col1, col2, col3 = st.columns([5, 5, 3])
-    date = col1.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"))
-    start = date.strftime("%Y-%m-%d")
+    start_date = col1.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"))
+    start = start_date.strftime("%Y-%m-%d")
     end_date = col2.date_input("To Date", min_value=pd.to_datetime(start, format="%Y-%m-%d"), max_value=pd.to_datetime('today', format="%Y-%m-%d"))
     end = end_date.strftime("%Y-%m-%d")
     if start == end:
-        col3.subheader("Date Selected : `{}`".format(date))
+        col3.subheader("Date Selected : `{}`".format(start_date))
     else:
         col3.subheader("Date Range : `{}` to `{}`".format(start, end))
-    daterange = st.sidebar.radio("Select Dates", ["single date", "all dates", "last 7 days"])
 
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
     # zipinfo file - z
@@ -191,33 +190,31 @@ def display_content(userid):
     with tab1:
         df = tab_display(data_list[0])
         df1 = df_date_index(df)
-        df2 = filter_df_by_date(df1, date, daterange)
+        df2 = filter_df_by_date(df1, start_date, end_date)
         st.dataframe(df2, use_container_width=True)
     with tab2:
         df = tab_display(data_list[1])
         df1 = df_date_index(df)
-        df2 = filter_df_by_date(df1, date, daterange)
+        df2 = filter_df_by_date(df1, start_date, end_date)
         st.dataframe(df2, use_container_width=True)
     with tab3:
         df = tab_display(data_list[2])
         df1 = df_date_index(df)
-        df2 = filter_df_by_date(df1, date, daterange)
+        df2 = filter_df_by_date(df1, start_date, end_date)
         st.dataframe(df2, use_container_width=True)
     with tab4:
         df = tab_display(data_list[3])
         df1 = df_date_index(df)
-        df2 = filter_df_by_date(df1, date, daterange)
+        df2 = filter_df_by_date(df1, start_date, end_date)
         st.dataframe(df2, use_container_width=True)
     return None
 
-def filter_df_by_date(df, date, daterange):
-    if daterange == 'single date':
-        mask = (df.index == date)
-        df = df.loc[mask]
-    elif daterange == 'all dates':
-        df = df
-    elif daterange == 'last 7 days':
-        df = df[df.index > datetime.datetime.now().date() - datetime.timedelta(days=7)]
+def filter_df_by_date(df, start_date, end_date):
+    if start_date == end_date:
+        mask = (df.index == start_date)
+    else:
+        mask = (df.index >= start_date) & (df.index <= end_date)
+    df = (df.loc[mask])
     return df
 
 def new_user_setup(rows, filename, index, phone_no, form1, form2):
