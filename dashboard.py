@@ -107,6 +107,18 @@ hide_menu_style = """
         """
 st.markdown(hide_menu_style, unsafe_allow_html=True)
 
+# Remove white space on top of page
+st.markdown("""
+        <style>
+            .block-container {
+                    padding-top: 0.5em;
+                    padding-bottom: 0rem;
+                    padding-left: 5rem;
+                    padding-right: 5rem;
+                }
+        </style>
+        """, unsafe_allow_html=True)
+
 # functions
 @st.cache_resource
 def init_connection():
@@ -182,11 +194,9 @@ def display_content(userid):
     # Last Updated by userid
     #user_info = tab_display(data_list[4])
     #st.sidebar.info("Last Updated by " + user_info.columns[0])
-    last_updated.subheader('Last Upload Date : `{}`'.format(lastmodified.date()))
     #st.sidebar.success("{}".format(date.strftime('%d %B %Y')))
+    last_updated.subheader('Last Upload Date : `{}`'.format(lastmodified.date()))
     
-    # TD - add filename logic based on login credentials from supabase
-    # TD - use st.dataframe to freeze 1st column in summary
     with tab1:
         df = tab_display(data_list[0])
         df1 = df_date_index(df)
