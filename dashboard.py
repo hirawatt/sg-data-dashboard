@@ -40,7 +40,7 @@ st.set_page_config(
     '{}'.format(page_title),
     '⛽',
     layout='wide',
-    initial_sidebar_state='expanded',
+    initial_sidebar_state='collapsed',
     menu_items={
         "Get Help": "https://softgun.in",
         "About": "Softgun Dashboard App",
@@ -49,8 +49,7 @@ st.set_page_config(
 
 # R2 data operations
 bucketName = 'softgun'
-#objectName = 'softgun-data-f1.zip'
-objectName = 'master-data.csv'
+objectName = 'softgun-data-f1.zip'
 fileName = 'datafile.zip'
 file_list = []
 
@@ -142,14 +141,15 @@ def df_date_index(df):
     return df
 
 def display_content(userid):
-    col1, col2 = st.columns([5, 2])
-    col2.button("Logout {}".format(userid), on_click=logout, use_container_width=True)
-    #col1.header('⛽ ' + page_title )
-    #col2.subheader('{}'.format(userid))
-    st.sidebar.title(':cyclone: ' +  sidebar_title)
-    date = st.sidebar.date_input("Select Date")
+    c1, c2, c3 = st.columns([6, 3, 3])
+    c1.header('⛽ Pump : {}'.format("Kolkata Pump"))
+    c2.subheader('Last Upload Date : {}'.format(userid))
+    c3.button("Logout {}".format(userid), on_click=logout, use_container_width=True)
+    col1, col2, col3 = st.columns([5, 5, 3])
+    date = col1.date_input("From Date")
+    end_date = col2.date_input("To Date")
+    col3.subheader("Date Selected : {}".format(date))
     daterange = st.sidebar.radio("Select Dates", ["single date", "all dates", "last 7 days"])
-    st.sidebar.info("Data only available for present date")
 
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
     # zipinfo file - z
@@ -174,7 +174,9 @@ def display_content(userid):
     # TD - use st.dataframe to freeze 1st column in summary
     with tab1:
         df = tab_display(data_list[0])
-        st.dataframe(df, use_container_width=True)
+        df1 = df_date_index(df)
+        df2 = filter_df_by_date(df1, date, daterange)
+        st.dataframe(df2, use_container_width=True)
     with tab2:
         df = tab_display(data_list[1])
         df1 = df_date_index(df)
