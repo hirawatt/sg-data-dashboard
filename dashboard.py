@@ -65,6 +65,7 @@ def get_data(filename, userid):
     contents = obj['Body'].read()
     buffer = BytesIO(contents)
     z = zipfile.ZipFile(buffer)
+    '''
     st.download_button(
         label="Download all files",
         data=buffer,
@@ -72,6 +73,7 @@ def get_data(filename, userid):
         mime='application/zip',
         use_container_width=True
     )
+    '''
     return z
 
 # footer & credits section
