@@ -187,7 +187,7 @@ styles = [
 def display_content(userid, c2, c3):
     start_date = c2.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"))
     start = start_date.strftime("%Y-%m-%d")
-    end_date = c3.date_input("To Date", min_value=pd.to_datetime(start, format="%Y-%m-%d"), max_value=pd.to_datetime('today', format="%Y-%m-%d"))
+    end_date = c3.date_input("To Date", min_value=pd.to_datetime(start, format="%Y-%m-%d"), max_value=pd.to_datetime('today', format="%Y-%m-%d"), value=pd.to_datetime(start_date, format="%Y-%m-%d"))
     end = end_date.strftime("%Y-%m-%d")
 
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
