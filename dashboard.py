@@ -282,7 +282,7 @@ def main() -> None:
 
         # login form
         with form1.form("login_form", clear_on_submit=True):
-            st.write("Login Form")
+            st.write("Login")
             st.session_state.userid = st.text_input("Userid")
             st.session_state.passwd = st.text_input("Password", type="password")
             st.session_state.form_submit = st.form_submit_button("Enter")
@@ -322,11 +322,12 @@ def main() -> None:
                 col2.header("Please Contact to get access!")
         # userid not submitted
         else:
-            col1, col2 = st.columns(2)
-            col1.info("Demo Userid")
-            col2.code("SG001")
-            col1.info("Demo Password")
-            col2.code("123456")
+            #col1, col2 = st.columns(2)
+            #col1.info("Demo Userid")
+            #col2.code("SG001")
+            #col1.info("Demo Password")
+            #col2.code("123456")
+            st.info("Login to Enter")
     else:
         form1.empty()
         c1, c2, c3 = st.columns([15, 3, 3])
