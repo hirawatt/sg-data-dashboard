@@ -173,6 +173,7 @@ def tab_display(data_file, shift):
 def df_date_index(df):
     df['DATE'] = pd.to_datetime(df['DATE']).dt.date
     df.set_index('DATE', inplace=True)
+    df.sort_index() # ascending=True
     return df
 
 # style
