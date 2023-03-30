@@ -217,27 +217,29 @@ def display_content(userid, c2, c3):
         df2 = filter_df_by_date(df1, start_date, end_date)
         c1, c2, c3 = st.columns([2, 4, 2])
         numRows = len(df2)
-        c2.dataframe(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}"), use_container_width=True, height=((numRows + 1) * 35 + 3))
-        #c2.table(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}").set_table_styles(styles))
+        c2.table(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}").set_table_styles(styles))
+        #c2.dataframe(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}"), use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab2:
         df = tab_display(data_list[1])
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
         numRows = len(df2)
-        st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
-        #st.table(df2.style.set_table_styles(styles))
+        st.table(df2.style.set_table_styles(styles))
+        #st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab3:
         df = tab_display(data_list[2])
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
         numRows = len(df2)
-        st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
+        st.table(df2.style.set_table_styles(styles))
+        #st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab4:
         df = tab_display(data_list[3])
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
         numRows = len(df2)
-        st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
+        st.table(df2.style.set_table_styles(styles))
+        #st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     return None
 
 def filter_df_by_date(df, start_date, end_date):
