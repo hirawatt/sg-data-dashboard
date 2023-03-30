@@ -127,9 +127,13 @@ def init_connection():
 
 supabase = init_connection()
 
-@st.cache_data(ttl=60000)
+@st.cache_data()
 def run_query():
     return supabase.table("owner_creds").select("*").execute()
+
+@st.cache_data()
+def get_tabs_info():
+    return supabase.table("reports").select("*").execute()
 
 @st.cache_data()
 def insert_query(filename, pin):
@@ -154,12 +158,17 @@ def logout():
     del st.session_state.passwd
     del st.session_state.pump_name
 
-def tab_display(data_file):
+def tab_display(data_file, shift):
     df = pd.read_csv(data_file)
-    newdf1 = df.dropna(thresh=2)
-    newdf2 = newdf1.dropna(axis="columns")
-    newdf = newdf2.fillna(0)
-    return newdf
+    df.fillna(0)
+    if shift == "All":
+        df1 = df
+    else:
+        df1 = df.query("SHIFT=={}".format(shift)).fillna(0)
+    #newdf1 = df.dropna(thresh=2)
+    #newdf2 = newdf1.dropna(axis="columns")
+    #newdf = newdf2.fillna(0)
+    return df1
 
 def df_date_index(df):
     df['DATE'] = pd.to_datetime(df['DATE']).dt.date
@@ -185,11 +194,13 @@ styles = [
     ]
 
 def display_content(userid, c2, c3):
-    start_date = c2.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"))
+    start_date = st.sidebar.date_input("From Date", max_value=pd.to_datetime('today', format="%Y-%m-%d"), value=pd.to_datetime("2023-03-23", format="%Y-%m-%d"))
     start = start_date.strftime("%Y-%m-%d")
-    end_date = c3.date_input("To Date", min_value=pd.to_datetime(start, format="%Y-%m-%d"), max_value=pd.to_datetime('today', format="%Y-%m-%d"), value=pd.to_datetime(start_date, format="%Y-%m-%d"))
+    end_date = st.sidebar.date_input("To Date", min_value=pd.to_datetime(start, format="%Y-%m-%d"), max_value=pd.to_datetime('today', format="%Y-%m-%d"), value=pd.to_datetime(start_date, format="%Y-%m-%d"))
     end = end_date.strftime("%Y-%m-%d")
+    shift = st.sidebar.selectbox("Select SHIFT", ["All", "1", "2", "3"])
 
+    tabs = get_tabs_info()
     tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
     # zipinfo file - z
     file_str = "softgun-{}".format(userid)
@@ -212,7 +223,7 @@ def display_content(userid, c2, c3):
     last_updated.write('Last Upload Date : `{}`'.format(lastmodified.date()))
     
     with tab1:
-        df = tab_display(data_list[0])
+        df = tab_display(data_list[0], shift)
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
         c1, c2, c3 = st.columns([2, 4, 2])
@@ -220,21 +231,21 @@ def display_content(userid, c2, c3):
         c2.table(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}").set_table_styles(styles))
         #c2.dataframe(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}"), use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab2:
-        df = tab_display(data_list[1])
+        df = tab_display(data_list[1], shift)
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
         numRows = len(df2)
         st.table(df2.style.set_table_styles(styles))
         #st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab3:
-        df = tab_display(data_list[2])
+        df = tab_display(data_list[2], shift)
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
         numRows = len(df2)
         st.table(df2.style.set_table_styles(styles))
         #st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab4:
-        df = tab_display(data_list[3])
+        df = tab_display(data_list[3], shift)
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
         numRows = len(df2)
@@ -308,9 +319,9 @@ def main() -> None:
                         st.session_state.user = rows.data[index]["user_id"]
                         c1, c2, c3 = st.columns([15, 3, 3])
                         c1.subheader('⛽ Pump : {}'.format(st.session_state.pump_name))
+                        st.sidebar.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
                         global last_updated
                         last_updated = st.sidebar.empty()
-                        st.sidebar.button("Logout {}".format(st.session_state.userid), on_click=logout, use_container_width=True)
                         display_content(st.session_state.userid, c2, c3)
                     else:
                         st.warning("Incorrect Password")
