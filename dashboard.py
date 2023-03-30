@@ -165,6 +165,7 @@ def tab_display(data_file, shift):
         df1 = df
     else:
         df1 = df.query("SHIFT=={}".format(shift)).fillna(0)
+        df1.drop(["SHIFT"], axis=1, inplace=True)
     #newdf1 = df.dropna(thresh=2)
     #newdf2 = newdf1.dropna(axis="columns")
     #newdf = newdf2.fillna(0)
@@ -226,31 +227,32 @@ def display_content(userid, c2, c3):
     with tab1:
         df = tab_display(data_list[0], shift)
         df1 = df_date_index(df)
-        df2 = filter_df_by_date(df1, start_date, end_date)
+        df2 = filter_df_by_date(df1, start_date, end_date).reset_index(drop=True)
         c1, c2, c3 = st.columns([2, 4, 2])
-        numRows = len(df2)
+        c2.write("**Date** : {} | **Shift** : {}".format(df.index[0], shift))
         c2.table(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}").set_table_styles(styles))
+        #numRows = len(df2)
         #c2.dataframe(df2.style.format(subset=['AMOUNT'], formatter="{:,.2f}"), use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab2:
         df = tab_display(data_list[1], shift)
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
-        numRows = len(df2)
         st.table(df2.style.set_table_styles(styles))
+        #numRows = len(df2)
         #st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab3:
         df = tab_display(data_list[2], shift)
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
-        numRows = len(df2)
         st.table(df2.style.set_table_styles(styles))
+        #numRows = len(df2)
         #st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     with tab4:
         df = tab_display(data_list[3], shift)
         df1 = df_date_index(df)
         df2 = filter_df_by_date(df1, start_date, end_date)
-        numRows = len(df2)
         st.table(df2.style.set_table_styles(styles))
+        #numRows = len(df2)
         #st.dataframe(df2, use_container_width=True, height=((numRows + 1) * 35 + 3))
     return None
 

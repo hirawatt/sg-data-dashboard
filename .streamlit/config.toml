@@ -15,3 +15,5 @@ magicEnabled = false
 
 [ui]
 hideTopBar = true
+
+[global]
