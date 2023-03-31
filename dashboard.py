@@ -2,6 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import datetime
+from zoneinfo import ZoneInfo
 import boto3
 from io import BytesIO, StringIO
 import zipfile
@@ -135,9 +136,10 @@ def run_query():
 def get_tabs_info():
     tabs = []
     tab_names = supabase.table("reports").select("*").execute()
-    for i in range(0, len(tab_names.data)):
+    no_of_tabs = len(tab_names.data)
+    for i in range(0, no_of_tabs):
         tabs.append(tab_names.data[i]['tabs'])
-    return tabs
+    return tabs, no_of_tabs
 
 @st.cache_data()
 def insert_query(filename, pin):
@@ -181,6 +183,9 @@ def df_date_index(df):
     df.sort_index() # ascending=True
     return df
 
+def utc_to_local(utc_dt):
+    return utc_dt.replace(tzinfo=datetime.timezone.utc).astimezone(tz=ZoneInfo("Asia/Calcutta"))
+
 # style
 th_props = [
     ('font-size', '14px'),
@@ -206,14 +211,14 @@ def display_content(userid, c2, c3):
     end = end_date.strftime("%Y-%m-%d")
     shift = st.sidebar.selectbox("Select SHIFT", ["All", "1", "2", "3"])
 
-    tab_names = get_tabs_info()
+    tab_names, no_of_tabs = get_tabs_info()
     tab1, tab2, tab3, tab4 = st.tabs(tab_names)
     # zipinfo file - z
     file_str = "softgun-{}".format(userid)
     index = [idx for idx, s in enumerate(file_list) if file_str in s][0]
     z = get_data(filename=file_list[index], userid=userid)
     file_info = z.infolist()
-    # skip 1st element of list which is not a file
+
     f1 = file_info[0] # 1_sr_sum.csv
     f2 = file_info[1] # 2_sr_m.csv
     f3 = file_info[2] # 3_sr_t.csv
@@ -226,7 +231,7 @@ def display_content(userid, c2, c3):
     #user_info = tab_display(data_list[4])
     #st.sidebar.info("Last Updated by " + user_info.columns[0])
     #st.sidebar.success("{}".format(date.strftime('%d %B %Y')))
-    last_updated.write('Last Upload Date : `{}`'.format(lastmodified.date()))
+    last_updated.write('Last Uploaded : `{}`'.format(utc_to_local(lastmodified).ctime()))
     
     with tab1:
         df = tab_display(data_list[0], shift)
