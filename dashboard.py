@@ -122,7 +122,7 @@ st.markdown("""
 
 # functions
 @st.cache_resource
-def init_connection():
+def init_connection(ttl=5000):
     return create_client(supabase_url, supabase_key)
 
 supabase = init_connection()
@@ -133,7 +133,11 @@ def run_query():
 
 @st.cache_data()
 def get_tabs_info():
-    return supabase.table("reports").select("*").execute()
+    tabs = []
+    tab_names = supabase.table("reports").select("*").execute()
+    for i in range(0, len(tab_names.data)):
+        tabs.append(tab_names.data[i]['tabs'])
+    return tabs
 
 @st.cache_data()
 def insert_query(filename, pin):
@@ -202,8 +206,8 @@ def display_content(userid, c2, c3):
     end = end_date.strftime("%Y-%m-%d")
     shift = st.sidebar.selectbox("Select SHIFT", ["All", "1", "2", "3"])
 
-    tabs = get_tabs_info()
-    tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Meter Details", "Tank Details", "Memo Report"])
+    tab_names = get_tabs_info()
+    tab1, tab2, tab3, tab4 = st.tabs(tab_names)
     # zipinfo file - z
     file_str = "softgun-{}".format(userid)
     index = [idx for idx, s in enumerate(file_list) if file_str in s][0]
